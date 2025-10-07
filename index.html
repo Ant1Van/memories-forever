@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Наши воспоминания</title>
+    
+    <!-- Подключаем CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Предзагрузка шрифтов (опционально) -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Заголовок сайта -->
+    <header class="header">
+        <div class="theme-switcher-wrapper">
+            <button class="theme-switcher" id="themeSwitcher" aria-label="Переключить тему">
+                <span class="theme-switcher__icon">🌙</span>
+            </button>
+        </div>
+        <h1 class="header__title">Наша история</h1>
+        <p class="header__subtitle">Каждый момент - это маленькая вечность</p>
+        
+        <div class="love-letter">
+            <div class="love-letter__content">
+                <p class="love-letter__text">
+                    Baby how you doing? I know you're not doing the best, but I'm here, I'll always be here<br>
+                    Tell me if you need me and call me if you're feelin' alone 'cause I'm here, I'm always right here<br>
+                    Tell me that I'm dumb, I love to get numb, I know that I'm young, but I'm still right here<br>
+                    I don't give a fuck, I love who I love and girl you're that one, so I'll wait right here...
+                </p>
+        
+                <!-- Обновленный мини-плеер с регулятором громкости -->
+                <div class="mini-player">
+                    <button class="mini-player__btn" id="miniPlayerBtn">
+                        <span class="mini-player__icon">▶</span>
+                        <span class="mini-player__text">Включить нашу песню</span>
+                    </button>
+            
+                    <div class="mini-volume-control">
+                        <button class="volume-icon-btn" id="miniVolumeBtn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path id="miniVolumeHigh" d="M11 4l-3 3H5v4h3l3 3z"/>
+                                <path id="miniVolumeMute" d="M9 4l-3 3H3v2h1.9L9 4zM12 9l-1.5 1.5 1.5 1.5 1.5-1.5L12 9z" style="display: none;"/>
+                            </svg>
+                        </button>
+                        <div class="mini-volume-slider-container">
+                            <div class="mini-volume-slider" id="miniVolumeSlider">
+                                <div class="mini-volume-level" id="miniVolumeLevel"></div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <audio id="miniPlayerAudio" preload="metadata">
+                        <source src="audio/LIL_PEEP-Right_Here.mp3" type="audio/mpeg">
+                        Ваш браузер не поддерживает аудио элементы.
+                    </audio>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основная галерея -->
+    <main class="main">
+        <div class="gallery" id="gallery">
+        </div>
+    </main>
+
+    <!-- Модальное окно для просмотра фото -->
+    <div class="modal" id="modal">
+        <div class="modal__content">
+            <button class="modal__close" id="modalClose">&times;</button>
+        
+            <div class="modal__image-container">
+                <img src="" alt="" class="modal__image" id="modalImage">
+            </div>
+        
+            <div class="modal__info-container">
+                <div class="modal__info">
+                    <h2 class="modal__title" id="modalTitle"></h2>
+                    <p class="modal__description" id="modalDescription"></p>
+                    <div class="modal__date" id="modalDate"></div>
+                </div>
+            
+                <div class="modal__audio-container">
+                    <div class="custom-audio-player">
+                        <div class="audio-info">
+                            <span class="audio-title" id="audioTitle">Сейчас играет</span>
+                                <div class="audio-time">
+                                    <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                                </div>
+                            </div>
+        
+                            <div class="audio-controls">
+                                <button class="control-btn" id="playPauseBtn">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                        <path id="playIcon" d="M8 5v10l7-5z"/>
+                                        <path id="pauseIcon" d="M5 5h3v10H5zm7 0h3v10h-3z" style="display: none;"/>
+                                    </svg>
+                                </button>
+            
+                                <div class="progress-container">
+                                    <div class="audio-progress" id="audioProgress">
+                                        <div class="progress-bar" id="progressBar"></div>
+                                    </div>
+                                </div>
+            
+                                <!-- Добавляем регулятор громкости -->
+                                <div class="volume-control">
+                                    <button class="control-btn volume-btn" id="volumeBtn">
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                            <path id="volumeHigh" d="M12 4l-3 3H6v6h3l3 3zM14 14c.4-.4.6-.9.6-1.5s-.2-1.1-.6-1.5l1-1c.7.7 1.1 1.6 1.1 2.5s-.4 1.8-1.1 2.5l-1-1zm2.5 2.5c.9-.9 1.5-2.2 1.5-3.5s-.6-2.6-1.5-3.5l1-1c1.1 1.1 1.8 2.7 1.8 4.5s-.7 3.4-1.8 4.5l-1-1z"/>
+                                            <path id="volumeMute" d="M15 8.5c0 .6-.2 1.1-.6 1.5l-1-1c.1-.1.2-.3.2-.5 0-.4-.3-.7-.7-.7-.2 0-.4.1-.5.2l-1-1c.4-.4.9-.6 1.5-.6.8 0 1.5.7 1.5 1.5zm-4.5 5.1L8 12H6v-1.2l-2.4-2.4-.6.6 2.5 2.5H4v2h2.5l3 3v-3.9l3.5 3.5-.6.6zM12 4l-3 3 1.4 1.4L12 6.8V4z" style="display: none;"/>
+                                        </svg>
+                                    </button>
+                
+                                    <div class="volume-slider-container">
+                                        <div class="volume-slider" id="volumeSlider">
+                                            <div class="volume-level" id="volumeLevel"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <!-- Скрытый стандартный плеер для функциональности -->
+                        <audio id="audioPlayer" style="display: none;"></audio>
+                    </div>
+            
+                <div class="modal__navigation">
+                    <button class="modal__nav-btn modal__nav-prev" id="prevBtn">‹</button>
+                    <span class="modal__counter" id="modalCounter">1 / 2</span>
+                    <button class="modal__nav-btn modal__nav-next" id="nextBtn">›</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <p>Создано с ❤️</p>
+    </footer>
+
+    <!-- Подключаем JavaScript -->
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
