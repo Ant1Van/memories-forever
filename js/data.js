@@ -53,6 +53,15 @@ const photosData = [
         imageSmall: "img/small/photo6.jpg",
         imageLarge: "img/big/photo6.jpg",
         audio: "audio/PHARAOH-Loulajjf.mp3"
+    },
+    {
+        id: 7,
+        title: "Приятный вечер в кофейне",
+        description: "Встретились, перед твоим отъездом в Кемерово. Я буду тебя ждать ❤️",
+        date: "15 октября 2025",
+        imageSmall: "img/small/photo7.jpg",
+        imageLarge: "img/big/photo7.jpg",
+        audio: "audio/T-fest-Davajj_skonektimsya.mp3"
     }
 ];
 
