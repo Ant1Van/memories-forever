@@ -1,5 +1,5 @@
-// Глобальная функция для остановки всех аудиоплееров
-function stopAllAudio() {
+// Глобальная функция для остановки всех аудио И видео плееров
+function stopAllMedia() {
     // Останавливаем мини-плеер
     const miniAudio = document.getElementById('miniPlayerAudio');
     if (miniAudio) {
@@ -7,11 +7,18 @@ function stopAllAudio() {
         miniAudio.currentTime = 0;
     }
     
-    // Останавливаем модальный плеер
+    // Останавливаем модальный аудио-плеер
     const modalAudio = document.getElementById('audioPlayer');
     if (modalAudio) {
         modalAudio.pause();
         modalAudio.currentTime = 0;
+    }
+    
+    // Останавливаем видео
+    const modalVideo = document.getElementById('modalVideo');
+    if (modalVideo) {
+        modalVideo.pause();
+        modalVideo.currentTime = 0;
     }
     
     // Обновляем кнопки мини-плеера
@@ -44,14 +51,17 @@ class PhotoGallery {
         this.currentPhotoIndex = 0;
         this.modal = document.getElementById('modal');
         this.audioPlayer = document.getElementById('audioPlayer');
+        this.videoPlayer = document.getElementById('modalVideo');
         this.isPlaying = false;
-        this.volume = 0.3; // Начальная громкость 30%
+        this.volume = 0.5; // Начальная громкость 50%
+        this.currentMediaType = 'photo'; // 'photo' или 'video'
         this.initEventListeners();
         this.initAudioPlayer();
+        this.initVideoPlayer();
     }
 
     initEventListeners() {
-        // Открытие модального окна при клике на фото
+        // Открытие модального окна при клике на фото/видео
         document.getElementById('gallery').addEventListener('click', (e) => {
             const photoCard = e.target.closest('.photo-card');
             if (photoCard) {
@@ -81,7 +91,7 @@ class PhotoGallery {
             this.showNextPhoto();
         });
 
-        // Закрытие по ESC
+        // Закрытие по ESC, пробел для паузы видео
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeModal();
@@ -89,6 +99,9 @@ class PhotoGallery {
                 this.showPreviousPhoto();
             } else if (e.key === 'ArrowRight') {
                 this.showNextPhoto();
+            } else if (e.key === ' ' && this.currentMediaType === 'video') {
+                e.preventDefault();
+                this.toggleVideoPlayPause();
             }
         });
 
@@ -114,6 +127,47 @@ class PhotoGallery {
         }
     }
 
+    initVideoPlayer() {
+        if (!this.videoPlayer) return;
+
+        // Устанавливаем начальную громкость
+        this.videoPlayer.volume = this.volume;
+
+        // События видео
+        this.videoPlayer.addEventListener('loadedmetadata', () => {
+            console.log('Видео загружено');
+        });
+
+        this.videoPlayer.addEventListener('play', () => {
+            console.log('Видео воспроизводится');
+            // Останавливаем аудио-плеер если видео начало играть
+            if (this.audioPlayer) {
+                this.pauseAudio();
+            }
+        });
+
+        this.videoPlayer.addEventListener('pause', () => {
+            console.log('Видео на паузе');
+        });
+
+        this.videoPlayer.addEventListener('ended', () => {
+            console.log('Видео завершено');
+        });
+
+        // Синхронизация громкости видео с общей громкостью
+        this.videoPlayer.addEventListener('volumechange', () => {
+            this.volume = this.videoPlayer.volume;
+        });
+    }
+
+    toggleVideoPlayPause() {
+        if (this.videoPlayer.paused) {
+            this.videoPlayer.play();
+        } else {
+            this.videoPlayer.pause();
+        }
+    }
+
     initAudioPlayer() {
         // Кнопка воспроизведения/паузы
         document.getElementById('playPauseBtn').addEventListener('click', () => {
@@ -128,14 +182,14 @@ class PhotoGallery {
             this.seekAudio(percent);
         });
 
-        // Громкость для модального окна - ИСПРАВЛЕННАЯ ВЕРСИЯ
+        // Громкость для модального окна
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeBtn = document.getElementById('volumeBtn');
 
         // Устанавливаем начальную громкость
         this.setVolume(this.volume);
 
-        // Клик по слайдеру громкости - ГОРИЗОНТАЛЬНЫЙ
+        // Клик по слайдеру громкости
         volumeSlider.addEventListener('click', (e) => {
             const rect = volumeSlider.getBoundingClientRect();
             const percent = (e.clientX - rect.left) / rect.width;
@@ -166,12 +220,16 @@ class PhotoGallery {
         });
     }
 
-    // ЕДИНСТВЕННЫЙ метод setVolume - удали дубликаты!
     setVolume(level) {
         this.volume = Math.max(0, Math.min(1, level));
         this.audioPlayer.volume = this.volume;
         
-        // Обновляем слайдер громкости в модальном окне (горизонтальный)
+        // Также обновляем громкость видео
+        if (this.videoPlayer) {
+            this.videoPlayer.volume = this.volume;
+        }
+        
+        // Обновляем слайдер громкости в модальном окне
         const volumeLevel = document.getElementById('volumeLevel');
         if (volumeLevel) {
             volumeLevel.style.width = (this.volume * 100) + '%';
@@ -180,13 +238,12 @@ class PhotoGallery {
         this.updateVolumeIcon();
     }
 
-    // ЕДИНСТВЕННЫЙ метод toggleMute - удали дубликаты!
     toggleMute() {
         if (this.audioPlayer.volume > 0) {
             this.previousVolume = this.audioPlayer.volume;
             this.setVolume(0);
         } else {
-            this.setVolume(this.previousVolume || 0.3);
+            this.setVolume(this.previousVolume || 0.5);
         }
     }
 
@@ -214,8 +271,8 @@ class PhotoGallery {
     }
 
     playAudio() {
-        // Останавливаем все другие плееры перед запуском
-        stopAllAudio();
+        // Останавливаем все другие медиа перед запуском
+        stopAllMedia();
         
         const playPromise = this.audioPlayer.play();
         if (playPromise !== undefined) {
@@ -288,8 +345,8 @@ class PhotoGallery {
     }
 
     openModal(photoId) {
-        // Останавливаем все плееры при открытии модального окна
-        stopAllAudio();
+        // Останавливаем все медиа при открытии модального окна
+        stopAllMedia();
         
         this.currentPhotoIndex = photosData.findIndex(photo => photo.id === photoId);
         this.updateModalContent();
@@ -300,8 +357,10 @@ class PhotoGallery {
     closeModal() {
         this.modal.style.display = 'none';
         document.body.style.overflow = 'auto';
-        this.pauseAudio();
-        this.audioPlayer.currentTime = 0;
+        
+        // Останавливаем все медиа при закрытии
+        stopAllMedia();
+        
         this.updateProgress();
         this.updateTime();
     }
@@ -309,38 +368,79 @@ class PhotoGallery {
     updateModalContent() {
         const currentPhoto = photosData[this.currentPhotoIndex];
         
-        // Показываем индикатор загрузки
+        // Определяем тип медиа
+        this.currentMediaType = currentPhoto.type || 'photo';
+        
         const modalImage = document.getElementById('modalImage');
-        modalImage.classList.remove('loaded', 'prev', 'next');
-        modalImage.src = currentPhoto.imageLarge;
-        modalImage.alt = currentPhoto.title;
+        const modalVideoWrapper = document.getElementById('modalVideoWrapper');
         
-        modalImage.onload = () => {
-            modalImage.classList.add('loaded');
-        };
+        if (this.currentMediaType === 'video') {
+            // Показываем видео, скрываем изображение
+            modalImage.style.display = 'none';
+            modalVideoWrapper.style.display = 'block';
+            
+            // Загружаем видео
+            const videoSource = this.videoPlayer.querySelector('source');
+            videoSource.src = currentPhoto.videoSrc;
+            this.videoPlayer.load();
+            
+            // Устанавливаем громкость
+            this.videoPlayer.volume = this.volume;
+            
+            // Автовоспроизведение видео
+            setTimeout(() => {
+                const playPromise = this.videoPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Автовоспроизведение видео заблокировано:", error);
+                    });
+                }
+            }, 300);
+            
+            // Скрываем аудио-плеер для видео
+            document.querySelector('.custom-audio-player').style.display = 'none';
+            
+        } else {
+            // Показываем изображение, скрываем видео
+            modalImage.style.display = 'block';
+            modalVideoWrapper.style.display = 'none';
+            
+            // Останавливаем видео
+            this.videoPlayer.pause();
+            this.videoPlayer.currentTime = 0;
+            
+            // Показываем индикатор загрузки для фото
+            modalImage.classList.remove('loaded', 'prev', 'next');
+            modalImage.src = currentPhoto.imageLarge;
+            modalImage.alt = currentPhoto.title;
+            
+            modalImage.onload = () => {
+                modalImage.classList.add('loaded');
+            };
+            
+            // Обновляем аудио для фото
+            this.pauseAudio();
+            this.audioPlayer.currentTime = 0;
+            
+            if (currentPhoto.audio) {
+                this.audioPlayer.src = currentPhoto.audio;
+                this.audioPlayer.load();
+                document.querySelector('.custom-audio-player').style.display = 'block';
+                
+                // Автовоспроизведение аудио
+                setTimeout(() => {
+                    this.playAudio();
+                }, 500);
+            } else {
+                document.querySelector('.custom-audio-player').style.display = 'none';
+            }
+        }
         
-        // Обновляем остальной контент
+        // Обновляем общую информацию
         document.getElementById('modalTitle').textContent = currentPhoto.title;
         document.getElementById('modalDescription').textContent = currentPhoto.description || '';
         document.getElementById('modalDate').textContent = currentPhoto.date;
         document.getElementById('modalCounter').textContent = `${this.currentPhotoIndex + 1} / ${photosData.length}`;
-        
-        // Обновляем аудио
-        this.pauseAudio();
-        this.audioPlayer.currentTime = 0;
-        
-        if (currentPhoto.audio) {
-            this.audioPlayer.src = currentPhoto.audio;
-            this.audioPlayer.load();
-            document.querySelector('.custom-audio-player').style.display = 'block';
-            
-            // Автовоспроизведение
-            setTimeout(() => {
-                this.playAudio();
-            }, 500);
-        } else {
-            document.querySelector('.custom-audio-player').style.display = 'none';
-        }
         
         this.updateProgress();
         this.updateTime();
@@ -349,6 +449,10 @@ class PhotoGallery {
     showPreviousPhoto() {
         if (this.currentPhotoIndex > 0) {
             const modalImage = document.getElementById('modalImage');
+            
+            // Останавливаем текущее медиа
+            stopAllMedia();
+            
             modalImage.classList.add('prev');
             setTimeout(() => {
                 this.currentPhotoIndex--;
@@ -361,6 +465,10 @@ class PhotoGallery {
     showNextPhoto() {
         if (this.currentPhotoIndex < photosData.length - 1) {
             const modalImage = document.getElementById('modalImage');
+            
+            // Останавливаем текущее медиа
+            stopAllMedia();
+            
             modalImage.classList.add('next');
             setTimeout(() => {
                 this.currentPhotoIndex++;
@@ -385,8 +493,6 @@ class ThemeManager {
     init() {
         this.setTheme(this.currentTheme);
         this.themeSwitcher.addEventListener('click', () => this.toggleTheme());
-        
-        // Обновляем иконку при загрузке
         this.updateIcon();
     }
 
@@ -401,7 +507,6 @@ class ThemeManager {
         const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
         this.setTheme(newTheme);
         
-        // Анимация переключения
         this.themeSwitcher.style.transform = 'scale(1.2) rotate(180deg)';
         setTimeout(() => {
             this.themeSwitcher.style.transform = '';
@@ -424,7 +529,7 @@ class MiniPlayer {
         this.volumeSlider = document.getElementById('miniVolumeSlider');
         this.volumeLevel = document.getElementById('miniVolumeLevel');
         this.isPlaying = false;
-        this.volume = 0.3; // Начальная громкость 30% (тише)
+        this.volume = 0.3;
         
         this.init();
     }
@@ -432,11 +537,9 @@ class MiniPlayer {
     init() {
         this.button.addEventListener('click', () => this.togglePlay());
         
-        // Инициализация громкости
         this.setVolume(this.volume);
         this.initVolumeControls();
         
-        // События для обновления UI
         this.audio.addEventListener('play', () => {
             this.isPlaying = true;
             this.updateButton();
@@ -454,19 +557,16 @@ class MiniPlayer {
     }
     
     initVolumeControls() {
-        // Клик по слайдеру громкости
         this.volumeSlider.addEventListener('click', (e) => {
             const rect = this.volumeSlider.getBoundingClientRect();
             const percent = (e.clientX - rect.left) / rect.width;
             this.setVolume(percent);
         });
         
-        // Кнопка mute/unmute
         this.volumeBtn.addEventListener('click', () => {
             this.toggleMute();
         });
         
-        // Устанавливаем начальную громкость
         this.audio.volume = this.volume;
     }
     
@@ -508,8 +608,7 @@ class MiniPlayer {
     }
     
     play() {
-        // Останавливаем все другие плееры перед запуском
-        stopAllAudio();
+        stopAllMedia();
         
         const playPromise = this.audio.play();
         if (playPromise !== undefined) {
@@ -541,9 +640,45 @@ class MiniPlayer {
     }
 }
 
-// Инициализируем мини-плеер при загрузке страницы
+function renderGallery() {
+    const gallery = document.getElementById('gallery');
+    
+    photosData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'photo-card';
+        card.setAttribute('data-id', item.id);
+        card.setAttribute('data-type', item.type || 'photo');
+        
+        const img = document.createElement('img');
+        img.src = item.imageSmall;
+        img.alt = item.title;
+        img.className = 'photo-card__image';
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'photo-card__overlay';
+        
+        const title = document.createElement('h3');
+        title.className = 'photo-card__title';
+        title.textContent = item.title;
+        
+        const date = document.createElement('p');
+        date.className = 'photo-card__date';
+        date.textContent = item.date;
+        
+        overlay.appendChild(title);
+        overlay.appendChild(date);
+        
+        card.appendChild(img);
+        card.appendChild(overlay);
+        
+        gallery.appendChild(card);
+    });
+}
+
+// Обнови инициализацию
 document.addEventListener('DOMContentLoaded', () => {
+    // initGallery(); // <-- ЭТУ СТРОКУ УДАЛИ! Она уже вызывается в data.js
     new PhotoGallery();
     new ThemeManager();
-    new MiniPlayer(); // Добавляем инициализацию мини-плеера
+    new MiniPlayer();
 });

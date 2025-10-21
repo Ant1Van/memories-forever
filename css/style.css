@@ -1311,3 +1311,112 @@ body {
 [data-theme="light"] .volume-level {
     background: var(--primary-color);
 }
+
+/* Стили для видео в модальном окне */
+.modal__media-container {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.modal__video-wrapper {
+    position: relative;
+    width: 100%;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.modal__video {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    display: block;
+    border-radius: 12px;
+}
+
+/* Кастомные контролы для видео (если нужно) */
+.modal__video::-webkit-media-controls-panel {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+}
+
+.modal__video::-webkit-media-controls-play-button {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+/* Адаптивность для видео */
+@media (max-width: 768px) {
+    .modal__video {
+        max-height: 50vh;
+    }
+}
+
+/* Индикатор видео в галерее */
+.photo-card[data-type="video"]::after {
+    content: '▶';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    opacity: 0.9;
+}
+
+.photo-card[data-type="video"]:hover::after {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+    transition: all 0.3s ease;
+}
+
+/* Иконка воспроизведения для видео */
+.video-play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+.photo-card:hover .video-play-icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.photo-card[data-type="video"] {
+    position: relative;
+}
+
+.photo-card[data-type="video"]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.3) 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Анимация для video play icon */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.9;
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.05);
+    }
+}
+
+.photo-card[data-type="video"]:hover .video-play-icon svg {
+    animation: pulse 1.5s ease-in-out infinite;
+}

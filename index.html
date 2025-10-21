@@ -72,8 +72,23 @@
         <div class="modal__content">
             <button class="modal__close" id="modalClose">&times;</button>
         
-            <div class="modal__image-container">
+            <div class="modal__media-container">
+            <!-- Контейнер для фото -->
                 <img src="" alt="" class="modal__image" id="modalImage">
+    
+                <!-- Контейнер для видео -->
+                <div class="modal__video-wrapper" id="modalVideoWrapper" style="display: none;">
+                    <video 
+                        id="modalVideo" 
+                        class="modal__video"
+                        controls
+                        controlsList="nodownload"
+                        disablePictureInPicture
+                    >
+                        <source src="" type="video/mp4">
+                        Ваш браузер не поддерживает видео.
+                    </video>
+                </div>
             </div>
         
             <div class="modal__info-container">
